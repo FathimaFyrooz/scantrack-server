@@ -20,20 +20,27 @@ def get_tokens_for_user(user):
 def signup(request):
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body.decode('utf-8'))
+            print("data is here", data)
+
             username = data.get('username')
+            email = data.get('email')  # ✅ Get email
             password = data.get('password')
 
-            if not username or not password:
-                return JsonResponse({'error': 'Username and password are required'}, status=400)
+            if not username or not password or not email:
+                return JsonResponse({'error': 'Username, email, and password are required'}, status=400)
 
             if User.objects.filter(username=username).exists():
-                return JsonResponse({'error': 'User already exists'}, status=400)
+                return JsonResponse({'error': 'Username already taken'}, status=400)
 
-            user = User.objects.create_user(username=username, password=password)
+            if User.objects.filter(email=email).exists():
+                return JsonResponse({'error': 'Email already registered'}, status=400)
+
+            user = User.objects.create_user(username=username, email=email, password=password)
             return JsonResponse({'message': 'User registered successfully'}, status=201)
 
         except Exception as e:
+            print("EXCEPTION OCCURRED:", str(e))
             return JsonResponse({'error': str(e)}, status=400)
 
 @csrf_exempt
