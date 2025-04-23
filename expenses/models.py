@@ -20,7 +20,7 @@ class Receipt(models.Model):
 
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="expenses")
-    receipt = models.ForeignKey("Receipt", on_delete=models.CASCADE, related_name="expenses")
+    receipt = models.ForeignKey("Receipt", on_delete=models.CASCADE, related_name="expenses", null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
     merchant = models.CharField(max_length=255)

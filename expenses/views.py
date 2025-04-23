@@ -11,6 +11,9 @@ from expenses.models import Receipt,Expense
 from ocr.models import OCRExtractedData
 from django.views.decorators.csrf import csrf_exempt
 from .openai import parse_receipt_data
+from rest_framework.response import Response
+from rest_framework import status
+from decimal import Decimal
 
 import pdfplumber
 
@@ -119,3 +122,21 @@ def get_expenses(request):
             for expense in expenses
         ]
         return JsonResponse(data, safe=False)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_expense(request):
+    data = request.data
+    user = request.user
+
+    try:
+        expense = Expense.objects.create(
+            user=user,
+            date=data.get('date'),
+            merchant=data.get('merchant'),
+            amount=Decimal(data.get('amount')),  # Convert string to Decimal
+            notes=data.get('notes')
+        )
+        return Response({'message': 'Expense created successfully.'}, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
